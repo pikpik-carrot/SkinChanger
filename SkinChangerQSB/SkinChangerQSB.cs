@@ -98,6 +98,12 @@ public class SkinChangerQSB : MonoBehaviour
         }
         else
         {
+            // Backwards compat from the Inhabitant clothing customization update
+            // Clothing choices are not synced: Could be a cool feature in the future
+            if (skinName == "Inhabitant")
+            {
+                skinName = "Inhabitant_QSB";
+            }
             if (_skins.TryGetValue(player.PlayerId, out var skin))
             {
                 if (skin.skinName == skinName)

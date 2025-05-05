@@ -126,6 +126,7 @@ namespace SkinChanger
 			foreach (var path in Directory.EnumerateFiles(Path.Combine(ModHelper.Manifest.ModFolderPath, "Assets")))
 			{
 				if (Path.GetExtension(path) == ".manifest") continue; // ignore the non bundle files
+				if (path == "Assets") continue; // This shouldn't be in the release but if it snuck in ignore it
 
 				LoadPrefab(path);
 			}
@@ -173,6 +174,8 @@ namespace SkinChanger
 					new PlayableCharacter("Traveller_HEA_Player_v23",  "Moraine",          new Vector3(0, 0.3f, 0.1f),         0.5f, 1.5f,       new Vector3(0f, -0.2f, 0)),
 					new PlayableCharacter("Traveller_HEA_Player_v24",  "Tuff",             new Vector3(0, 0.8496093f,          0.15f), 0.5f, 2f, Vector3.zero),
 					new PlayableCharacter("Traveller_HEA_Player_v25",  "Tektite",          new Vector3(0, 1.2f, 0.2f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0)),
+					// The Inhabitant customization patch made breaking changes to QSB syncing. Because of this we use the old inhabitant model for QSB back compat
+					new PlayableCharacter("Traveller_HEA_Player_v3_QSB","Inhabitant_QSB",   new Vector3(0, 2.2f, 0.27f),        0.5f, 3.6f,       new Vector3(0f, 0.875f, 0f)),
 					MissingSkin
 				};
 
@@ -255,7 +258,13 @@ namespace SkinChanger
 				{
 					var prefab = (GameObject)req2.asset;
 					ReplaceShaders(prefab);
-					prefabs.Add(prefab.name, prefab);
+					var name = prefab.name;
+					// The QSB duplicated of the Inhabitant has the same prefab name so we have to manually change the name here
+					if (path.Contains("_qsb"))
+					{
+						name = name + "_QSB";
+					}
+					prefabs.Add(name, prefab);
 					ModHelper.Console.WriteLine($"loaded prefab {prefab}");
 				};
 			};
