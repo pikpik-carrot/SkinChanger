@@ -1,47 +1,121 @@
 {
   "$schema": "https://raw.githubusercontent.com/ow-mods/owml/master/schemas/config_schema.json",
   "enabled": true,
-  "settings": {
-    "Model": {
-      "type": "selector",
-      "options": [
-        "Hatchling",
-        "Chert",
-        "Esker",
-        "Riebeck",
-        "Gabbro",
-        "Feldspar",
-        "Nomai",
-        "Inhabitant",
-        "Slate",
-        "Hal",
-        "Hornfels",
-        "Gossan",
-        "Mica",
-        "Arkose",
-        "Tephra",
-        "Galena",
-        "Spinel",
-        "Porphy",
-        "Rutile",
-        "Marl",
-        "Gneiss",
-        "Moraine",
-        "Tuff",
-        "Tektite"
-      ],
-      "tooltip": "Changes the model of the player.",
-      "value": "Hatchling"
-    },
-    "Change Camera": {
-      "type": "toggle",
-      "tooltip": "Changes camera height to match player model.",
-      "value": true
-    },
-    "Change Collider": {
-      "type": "toggle",
-      "tooltip": "Changes colliders to match player model.",
-      "value": false
-    }
-  }
+	"settings": {
+		"Model": {
+			"type": "selector",
+			"options": [
+				"Hatchling",
+				"Chert",
+				"Esker",
+				"Riebeck",
+				"Gabbro",
+				"Feldspar",
+				"Nomai",
+				"Inhabitant",
+				"Slate",
+				"Hal",
+				"Hornfels",
+				"Gossan",
+				"Mica",
+				"Arkose",
+				"Tephra",
+				"Galena",
+				"Spinel",
+				"Porphy",
+				"Rutile",
+				"Marl",
+				"Gneiss",
+				"Moraine",
+				"Tuff",
+				"Tektite"
+			],
+			"tooltip": "Changes the model of the player.",
+			"value": "Hatchling"
+		},
+		"Change Camera": {
+			"type": "toggle",
+			"tooltip": "Changes camera height to match player model.",
+			"value": true
+		},
+		"Default Camera in Ship": {
+			"type": "toggle",
+			"tooltip": "Changes camera height to match player model.",
+			"value": true
+		},
+		"Change Collider": {
+			"type": "toggle",
+			"tooltip": "Changes colliders to match player model.",
+			"value": false
+		},
+		"Separator": {
+			"type": "separator",
+			"dlcOnly": true
+		},
+		"Inhabitant Clothing": {
+			"dlcOnly": true,
+			"type": "selector",
+			"options": [
+				"BLACK",
+				"BLUE",
+				"BROWN",
+				"GREEN",
+				"INVERSE",
+				"RED",
+				"RUGBLUE",
+				"RUGGREEN",
+				"RUGRED",
+				"WHITE",
+				"YELLOW"
+			],
+			"tooltip": "Changes the color of the Inhabitant's clothing.",
+			"value": "RED"
+		},
+		"Inhabitant Left Antler": {
+			"dlcOnly": true,
+			"type": "selector",
+			"options": [
+				"1 - Backward",
+				"2 - Broken",
+				"3 - Curvy",
+				"4 - Forward",
+				"5 - Sturdy",
+				"6 - Upward"
+			],
+			"tooltip": "Changes the type of antler of the Inhabitant's left antler.",
+			"value": "6 - Upward"
+		},
+		"Inhabitant Right Antler": {
+			"dlcOnly": true,
+			"type": "selector",
+			"options": [
+				"1 - Backward",
+				"2 - Broken",
+				"3 - Curvy",
+				"4 - Forward",
+				"5 - Sturdy",
+				"6 - Upward"
+			],
+			"tooltip": "Changes the type of antler of the Inhabitant's right antler.",
+			"value": "2 - Broken"
+		},
+		"Inhabitant Necklace": {
+			"dlcOnly": true,
+			"type": "toggle",
+			"tooltip": "Toggles the Inhabitant's necklace.",
+			"value": false
+		},
+		"Inhabitant Left Bracelet": {
+			"dlcOnly": true,
+			"type": "toggle",
+			"tooltip": "Toggles the Inhabitant's left bracelet.",
+			"value": false
+		},
+		"Inhabitant Right Bracelet": {
+			"dlcOnly": true,
+			"type": "toggle",
+			"tooltip": "Toggles the Inhabitant's right bracelet.",
+			"value": false
+		}
+	}
 }
