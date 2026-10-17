@@ -26,11 +26,11 @@
     <Content Include="SkinChanger.csproj.user" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\NonPlayerAssets\" />
+	<None Include="Assets\**">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	  <None Update="NonPlayerAssets\**">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 </Project>

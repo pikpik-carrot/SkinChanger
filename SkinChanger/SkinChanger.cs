@@ -10,6 +10,8 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using static SkinChanger.SkinChangerAPI;
 using System.ComponentModel.Design;
+using HarmonyLib;
+using SkinChanger.Emote_System;
 
 namespace SkinChanger
 {
@@ -37,15 +39,11 @@ namespace SkinChanger
 		public PlayableCharacter MissingSkin { get; private set; }
 
 		// variables for the inhabitant customization
-		public SkinnedMeshRenderer ghostRenderer; // variable to store the inhabitant's skinned mesh renderer
-		public GameObject[] ghostColors = new GameObject[11]; // variable to store all color configs for the skinned mesh renderer
-		private string[] ghostColorNames = new string[] { "BLACK", "BLUE", "BROWN", "GREEN", "INVERSE", "RED", "RUGBLUE", "RUGGREEN", "RUGRED", "WHITE", "YELLOW" };
+		private string[] ghostColorNames = ["BLACK", "BLUE", "BROWN", "GREEN", "INVERSE", "RED", "RUGBLUE", "RUGGREEN", "RUGRED", "WHITE", "YELLOW"];
 		public GameObject[] ghostAntlersL = new GameObject[6]; // array to store all inhabitant left antlers
 		public GameObject[] ghostAntlersR = new GameObject[6]; // array to store all inhabitant right antlers
 		public GameObject[] ghostAccessories = new GameObject[3]; // array to store all inhabitant accessories
-		public Transform[] antlerTransforms = new Transform[2]; // array to store transform values of both antlers
-		private bool hasInitialized; // checks if everything has been initialized
-		private AssetBundle robeBundle; // to store the asset bundle for the robe reference
+		private AssetBundle inhabitantColorBundle; // to store the asset bundle for the robe reference
 
 		public class PlayableCharacter
 		{
@@ -57,7 +55,7 @@ namespace SkinChanger
 			public float ColliderHeight;
 			public Vector3 ColliderCenter;
 
-			public PlayableCharacter(string prefabName, string settingName, Vector3 camOffset, float collRadius, float collHeight, Vector3 collCenter)
+			public PlayableCharacter(string prefabName, string settingName, Vector3 camOffset, float collRadius, float collHeight, Vector3 collCenter, bool hasEmotes = false)
 			{
 				GameObject = prefabName != null ? Instantiate(instance.prefabs[prefabName]) : instance.Traveller_HEA_Player_v2; // this line nres
 				SettingName = settingName;
@@ -66,6 +64,12 @@ namespace SkinChanger
 				ColliderRadius = collRadius;
 				ColliderHeight = collHeight;
 				ColliderCenter = collCenter;
+
+				if (hasEmotes)
+				{
+					var controller = GameObject.AddComponent<EmoteController>();
+					controller.characterName = settingName;
+				}
 			}
 		}
 
@@ -131,6 +135,8 @@ namespace SkinChanger
 				LoadPrefab(path);
 			}
 
+			inhabitantColorBundle = ModHelper.Assets.LoadBundle("NonPlayerAssets/ghostcustomization");
+
 			LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
 			{
 				if (loadScene is not (OWScene.SolarSystem or OWScene.EyeOfTheUniverse)) return;
@@ -149,15 +155,15 @@ namespace SkinChanger
 				// make the instances of the prefabs
 				characters = new List<PlayableCharacter>()
 				{
-					//Unity Object name                                //Setting Name      //Camera Offset                     //Collider Radius, Height, Center
+					//Unity Object name                                //Setting Name      //Camera Offset                     //Collider Radius, Height, Center                // Has Emotes?     
 					new PlayableCharacter(null /*uses existing v2*/,   "Hatchling",        new Vector3(0, 0.8496093f, 0.15f),  0.5f, 2f,         Vector3.zero),
-					new PlayableCharacter("Traveller_HEA_Player_v3",   "Inhabitant",       new Vector3(0, 2.5004f, 0.5701f),        0.5f, 3.6f,       new Vector3(0f, 0.875f, 0f)),
-					new PlayableCharacter("Traveller_HEA_Player_v4",   "Nomai",            new Vector3(0, 1.1f, 0.3f),         0.5f, 2.5f,       new Vector3(0f, 0.3f, 0f)),
-					new PlayableCharacter("Traveller_HEA_Player_v5",   "Chert",            new Vector3(0, 0.3f, 0.2f),         0.5f, 1.5f,       new Vector3(0f, -0.2f, 0f)),
-					new PlayableCharacter("Traveller_HEA_Player_v6",   "Esker",            new Vector3(0, 0.9f, 0.2f),         0.5f, 2f,         Vector3.zero),
-					new PlayableCharacter("Traveller_HEA_Player_v7",   "Riebeck",          new Vector3(0, 1.1f, 0.3f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0)),
-					new PlayableCharacter("Traveller_HEA_Player_v8",   "Gabbro",           new Vector3(0, 1.1f, 0.2f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0)),
-					new PlayableCharacter("Traveller_HEA_Player_v9",   "Feldspar",         new Vector3(0f, 0.8f, 0.2f),        0.5f, 2f,         Vector3.zero),
+					new PlayableCharacter("Traveller_HEA_Player_v3",   "Inhabitant",       new Vector3(0, 2.5004f, 0.5701f),   0.5f, 3.6f,       new Vector3(0f, 0.875f, 0f),   true),
+					new PlayableCharacter("Traveller_HEA_Player_v4",   "Nomai",            new Vector3(0, 1.1f, 0.3f),         0.5f, 2.5f,       new Vector3(0f, 0.3f, 0f),     true),
+					new PlayableCharacter("Traveller_HEA_Player_v5",   "Chert",            new Vector3(0, 0.3f, 0.2f),         0.5f, 1.5f,       new Vector3(0f, -0.2f, 0f),    true),
+					new PlayableCharacter("Traveller_HEA_Player_v6",   "Esker",            new Vector3(0, 0.9f, 0.2f),         0.5f, 2f,         Vector3.zero,                  true),
+					new PlayableCharacter("Traveller_HEA_Player_v7",   "Riebeck",          new Vector3(0, 1.1f, 0.3f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0),     true),
+					new PlayableCharacter("Traveller_HEA_Player_v8",   "Gabbro",           new Vector3(0, 1.1f, 0.2f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0),     true),
+					new PlayableCharacter("Traveller_HEA_Player_v9",   "Feldspar",         new Vector3(0f, 0.7f, 0.2f),        0.5f, 2f,         Vector3.zero,                  true),
 					new PlayableCharacter("Traveller_HEA_Player_v10",  "Slate",            new Vector3(0, 1.2f, 0.2f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0)),
 					new PlayableCharacter("Traveller_HEA_Player_v11",  "Hal",              new Vector3(0, 0.8496093f,          0.15f), 0.5f, 2f, Vector3.zero),
 					new PlayableCharacter("Traveller_HEA_Player_v12",  "Hornfels",         new Vector3(0, 1.1f, 0.2f),         0.5f, 2.5f,       new Vector3(0f, 0.25f, 0)),
@@ -200,6 +206,12 @@ namespace SkinChanger
 					// this terrible position comes from vanilla player. cry about it
 					character.GameObject.transform.localPosition = new Vector3(0, -1.03f, -0.2f);
 					character.GameObject.transform.localScale = Vector3.one * .1f;
+
+					if (character.SettingName is "Inhabitant" or "Nomai")
+						character.GameObject.AddComponent<SkinLookIK>();
+					
+					if (character.SettingName != "Hatchling")
+						character.GameObject.AddComponent<SkinCameraUpdate>();
 				}
 
 				ChangeSkin();
@@ -276,24 +288,23 @@ namespace SkinChanger
 			ChangeSkin();
 		}
 
-		const string ModelSetting = "Model";
-		const string ChangeCamera = "Change Camera";
-		const string NormalCameraSizeInShip = "Default Camera in Ship";
-		const string ChangeCollider = "Change Collider";
+		public const string ModelSetting = "Model";
+		public const string ChangeCamera = "Change Camera";
+		public const string NormalCameraSizeInShip = "Default Camera in Ship";
+		public const string ChangeCollider = "Change Collider";
 
 		// inhabitant setting strings
-		const string InhabitantClothing = "Inhabitant Clothing";
-		const string InhabitantLeftAntler = "Inhabitant Left Antler";
-		const string InhabitantRightAntler = "Inhabitant Right Antler";
-		const string InhabitantNecklace = "Inhabitant Necklace";
-		const string InhabitantLeftBracelet = "Inhabitant Left Bracelet";
-		const string InhabitantRightBracelet = "Inhabitant Right Bracelet";
+		public const string InhabitantClothing = "Inhabitant Clothing";
+		public const string InhabitantSkin = "Inhabitant Skin";
+		public const string InhabitantLeftAntler = "Inhabitant Left Antler";
+		public const string InhabitantRightAntler = "Inhabitant Right Antler";
+		public const string InhabitantNecklace = "Inhabitant Necklace";
+		public const string InhabitantLeftBracelet = "Inhabitant Left Bracelet";
+		public const string InhabitantRightBracelet = "Inhabitant Right Bracelet";
 
 		void Update()
 		{
-			
 			var changeCamInShip = ModHelper.Config.GetSettingsValue<bool>(NormalCameraSizeInShip);
-			var useCamera = ModHelper.Config.GetSettingsValue<bool>(ChangeCamera);
 			if (changeCamInShip)
 			{
 				if (LoadManager.GetCurrentScene() == OWScene.SolarSystem || LoadManager.GetCurrentScene() == OWScene.EyeOfTheUniverse)
@@ -302,10 +313,6 @@ namespace SkinChanger
 					{
 						PlayerCamera._origLocalPosition = characters[0].CameraOffset;
 					}
-					else if (useCamera)
-					{
-						PlayerCamera._origLocalPosition = CurrentCharacter.CameraOffset;
-					}
 				}
 			}
 		}
@@ -313,21 +320,29 @@ namespace SkinChanger
 		void ChangeSkin()
 		{
 			var modelSetting = ModHelper.Config.GetSettingsValue<string>(ModelSetting);
-			var useCamera = ModHelper.Config.GetSettingsValue<bool>(ChangeCamera);
 			var useCollider = ModHelper.Config.GetSettingsValue<bool>(ChangeCollider);
 
 			// inhabitant settings
 			var ghostClothes = ModHelper.Config.GetSettingsValue<string>(InhabitantClothing);
+			var ghostSkin = ModHelper.Config.GetSettingsValue<string>(InhabitantSkin);
 			var ghostAntlerL = ModHelper.Config.GetSettingsValue<string>(InhabitantLeftAntler);
 			var ghostAntlerR = ModHelper.Config.GetSettingsValue<string>(InhabitantRightAntler);
 			var ghostNecklace = ModHelper.Config.GetSettingsValue<bool>(InhabitantNecklace);
 			var ghostBraceletL = ModHelper.Config.GetSettingsValue<bool>(InhabitantLeftBracelet);
 			var ghostBraceletR = ModHelper.Config.GetSettingsValue<bool>(InhabitantRightBracelet);
 
-			if (!useCamera)
+			var customization = new InhabitantCustomization
 			{
-				PlayerCamera._origLocalPosition = characters[0].CameraOffset;
-			}
+				ClothingColor = ghostClothes,
+				SkinColor = ghostSkin,
+				
+				LeftAntler = ghostAntlerL[0] - '0' - 1,
+				RightAntler = ghostAntlerR[0] - '0' - 1,
+				
+				LeftBracelet = ghostBraceletL,
+				RightBracelet = ghostBraceletR,
+				Necklace = ghostNecklace
+			};
 
 			if (!useCollider)
 			{
@@ -350,10 +365,15 @@ namespace SkinChanger
 
 					character.GameObject.SetActive(true);
 
-					if (useCamera)
-					{
+					SkinCameraUpdate skinCameraUpdate;
+					if ((skinCameraUpdate = character.GameObject.GetComponent<SkinCameraUpdate>()) != null 
+					    && character.SettingName != "Inhabitant"
+					    && character.SettingName != "Nomai"
+					)
+						skinCameraUpdate.originalOffset = character.CameraOffset;
+					
+					if (character.SettingName == "Hatchling")
 						PlayerCamera._origLocalPosition = character.CameraOffset;
-					}
 
 					if (useCollider)
 					{
@@ -367,113 +387,10 @@ namespace SkinChanger
 						PlayerCollider2.center = character.ColliderCenter;
 						PlayerCollider3.center = character.ColliderCenter;
 					}
-
+					
 					// inhabitant customization
 					if (modelSetting == "Inhabitant")
-					{
-						// first-time setup for ghostbird customization, only runs once in the loop
-						if (!hasInitialized)
-						{
-							// gets all ghost robe colors
-							for (int i = 0; i < 11; i++)
-							{
-								ghostColors[i] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + ghostColorNames[i] + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Merged");
-							}
-						}
-
-						// ghost robe color setup
-						for (int i = 0; i < ghostColorNames.Length; i++) // loops through all colors (total of 11)
-						{
-							if (ghostClothes == ghostColorNames[i]) // checks if the current color
-							{
-								ghostColors[i].SetActive(true); // sets clothing color
-								if (ghostColorNames[i] == "BLACK") // checks if you are at beginning of color array
-								{
-									ReorderInhabitantPaths(ghostColorNames[ghostColorNames.Length-1]); // temporarily sets paths to the last color in the array to disable its accessories and antlers
-								} else
-								{
-									ReorderInhabitantPaths(ghostColorNames[i - 1]); // temporarily sets paths to the previous color to disable its accessories and antlers
-								}
-								// disable previous color antlers
-								for (int j = 0; j < 6; j++)
-								{
-									if (ghostAntlersL[j] != null && ghostAntlersR[j] != null) // only run if the left and right antler isn't null
-									{
-										ghostAntlersL[j].SetActive(false); // sets each left antler to false
-										ghostAntlersR[j].SetActive(false); // sets each right antler to false
-									}
-								}
-								// disable previous color accessories
-								for (int j = 0; j < 3; j++)
-								{
-									if (ghostAccessories[j] != null) // only runs when the accessory isn't null
-									{
-										ghostAccessories[j].SetActive(false); // sets each accessory to false
-									}
-								}
-								ReorderInhabitantPaths(ghostClothes); // sets inhabitant antler and accessory path back to the correct color
-							}
-							else
-							{
-								ghostColors[i].SetActive(false); // deactivates all other colors that are inactive
-							}
-						}
-
-						// antlers setup (loops through all 6 antlers)
-						for (int i = 0; i < 6; i++)
-						{
-							// left antler setup
-							if (i == ((int)ghostAntlerL[0] - '0') - 1) // gets the number at the first char of the current antler string
-							{
-								ghostAntlersL[i].SetActive(true); // if number matches the chosen setting, sets the gameobject active.
-							}
-							else
-							{
-								ghostAntlersL[i].SetActive(false); // otherwise set it to false.
-							}
-
-							// right antler setup
-							if (i == ((int)ghostAntlerR[0] - '0') - 1)  // gets the number at the first char of the current antler string
-							{
-								ghostAntlersR[i].SetActive(true); // if number matches the chosen setting, sets the gameobject active.
-							}
-							else
-							{
-								ghostAntlersR[i].SetActive(false); // otherwise set it to false.
-							}
-						}
-
-						// accessories setup
-						// ghost left bracelet setup
-						if (ghostBraceletL)
-						{
-							ghostAccessories[0].SetActive(true); // if the setting is set to true, enables the accessory.
-						}
-						else
-						{
-							ghostAccessories[0].SetActive(false); // otherwise sets it to false.
-						}
-
-						// ghost right bracelet setup
-						if (ghostBraceletR)
-						{
-							ghostAccessories[1].SetActive(true); // if the setting is set to true, enables the accessory.
-						}
-						else
-						{
-							ghostAccessories[1].SetActive(false); // otherwise sets it to false.
-						}
-
-						// ghost necklace setup
-						if (ghostNecklace)
-						{
-							ghostAccessories[2].SetActive(true); // if the setting is set to true, enables the accessory.
-						}
-						else
-						{
-							ghostAccessories[2].SetActive(false); // otherwise sets it to false.
-						}
-					}
+						CustomizeInhabitantSkin(character.GameObject.transform, customization);
 				}
 				else
 				{
@@ -484,29 +401,73 @@ namespace SkinChanger
 			skinChanged?.Invoke(modelSetting);
 		}
 
-		// changes the path of the antlers and accessories to the specified color passed into the method
-		private void ReorderInhabitantPaths(string currentColor)
+		public void CustomizeInhabitantSkin(Transform model, InhabitantCustomization customization)
 		{
-			// get the accessories
-			// index 0: left bracelet
-			ghostAccessories[0] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + currentColor + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories/Ghostbird_Skin_01:Ghostbird_v004:Bracelet_Left");
-			// index 1: right bracelet
-			ghostAccessories[1] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + currentColor + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories/Ghostbird_Skin_01:Ghostbird_v004:Bracelet_Right");
-			// index 2: necklace
-			ghostAccessories[2] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + currentColor + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories/Ghostbird_Skin_01:Ghostbird_v004:Necklace");
+			if (inhabitantColorBundle == null)
+				return;
+			
+			var clothingMaterial = inhabitantColorBundle.LoadAsset<Material>($"Ghostbird_DW_{customization.ClothingColor}Clothing_mat");
+			var skinMaterial = inhabitantColorBundle.LoadAsset<Material>($"Ghostbird_DW_{customization.SkinColor}Skin_mat");
 
-			// get antlers
-			//index 0: left antler transform
-			antlerTransforms[0] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + currentColor + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories/Ghostbird_Skin_01:Ghostbird_v004:Antlers_Left").transform;
-			//index 1: right antler transform
-			antlerTransforms[1] = GameObject.Find("Player_Body/Traveller_HEA_Player_v3(Clone)/" + currentColor + "/player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories/Ghostbird_Skin_01:Ghostbird_v004:Antlers_Right").transform;
+			ModHelper.Console.WriteLine($"Clothing: {clothingMaterial?.name ?? "NULL"}");
+			ModHelper.Console.WriteLine($"Skin: {skinMaterial?.name ?? "NULL"}");
+						
+			var ghostBirdIP = model.Find("player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_IP/");
+			var bodyRenderer = ghostBirdIP.Find("Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Merged").GetComponent<SkinnedMeshRenderer>();
+			var headRenderer = ghostBirdIP.Find("Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Merged_Head").GetComponent<SkinnedMeshRenderer>();
 
-			// gets the antlers
+			// Same as headRenderer.sharedMaterials[0]
+			headRenderer.sharedMaterial = skinMaterial;
+						
+			var bodyMaterials = bodyRenderer.sharedMaterials;
+			bodyMaterials[0] = clothingMaterial;
+			bodyMaterials[1] = skinMaterial;
+			bodyRenderer.sharedMaterials = bodyMaterials;
+						
+			ReplaceShaders(model.gameObject);
+			ReorderInhabitantPaths(model);
+			
 			for (int i = 0; i < 6; i++)
 			{
-				ghostAntlersL[i] = antlerTransforms[0].GetChild(i).gameObject; // gets all the left antlers
-				ghostAntlersR[i] = antlerTransforms[1].GetChild(i).gameObject; // gets all the right antlers
+				ghostAntlersL[i].gameObject.SetActive(i == customization.LeftAntler);
+				ghostAntlersR[i].gameObject.SetActive(i == customization.RightAntler);
+			}
+			
+			ghostAccessories[0].gameObject.SetActive(customization.LeftBracelet);
+			ghostAccessories[1].gameObject.SetActive(customization.RightBracelet);
+			ghostAccessories[2].gameObject.SetActive(customization.Necklace);
+		}
+
+		private void ReorderInhabitantPaths(Transform model)
+		{
+			var accessories = model.Find("player_mesh_noSuit:Traveller_HEA_Player/Ghostbird_Skin_01:Ghostbird_v004:Ghostbird_Accessories");
+			
+			ghostAccessories[0] = accessories.Find("Ghostbird_Skin_01:Ghostbird_v004:Bracelet_Left").gameObject;
+			ghostAccessories[1] = accessories.Find("Ghostbird_Skin_01:Ghostbird_v004:Bracelet_Right").gameObject;
+			ghostAccessories[2] = accessories.Find("Ghostbird_Skin_01:Ghostbird_v004:Necklace").gameObject;
+
+			var antlersL = accessories.Find("Ghostbird_Skin_01:Ghostbird_v004:Antlers_Left");
+			var antlersR = accessories.Find("Ghostbird_Skin_01:Ghostbird_v004:Antlers_Right");
+
+			for (int i = 0; i < 6; i++)
+			{
+				ghostAntlersL[i] = antlersL.GetChild(i).gameObject;
+				ghostAntlersR[i] = antlersR.GetChild(i).gameObject;
 			}
 		}
 	}
+}
+
+[Serializable]
+public class InhabitantCustomization
+{
+	public string ClothingColor = "RED";
+	public string SkinColor = "DEFAULT";
+
+	public int LeftAntler = 6;
+	public int RightAntler = 2;
+
+	public bool LeftBracelet;
+	public bool RightBracelet;
+	public bool Necklace;
 }
