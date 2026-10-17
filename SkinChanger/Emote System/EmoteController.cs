@@ -210,9 +210,32 @@ public class Emote
 	}
 }
 
-public class TravellersController(OWAudioSource audioSource)
+public class TravellersController(EmoteController emoteController, OWAudioSource audioSource)
 {
 	public OWAudioSource audioSource = audioSource;
+
+	private List<GameObject> instrumentGameObjects = new();
+
+	// I would use a simple path, but the paths are so long
+	// for most of them that it's super painful
+	private Dictionary<string, List<string>> instrumentNames = new()
+	{
+		["Chert"] = ["Traveller_Chert_DrumStick_01", "NewDrum:polySurface2"],
+		["Inhabitant"] = ["Ghostbird_Instrument", "Ghostbird_Bow_Instrument"],
+		["Feldspar"] = ["Props_HEA_FeldsparHarmonica"],
+		["Gabbro"] = ["Props_HEA_Flute:polySurface39_Sep_26"],
+		["Esker"] = ["Props_HEA_RockingChair:Props_HEA_RockingChair"]
+	};
+
+	public void Awake()
+	{
+		if (instrumentNames.TryGetValue(emoteController.characterName, out var instrumentGONames))
+		{
+			var objs = emoteController.transform.GetComponentsInChildren<Transform>(true);
+			foreach (var instrumentGOName in instrumentGONames)
+				instrumentGameObjects.Add(objs.FirstOrDefault(o => o.name == instrumentGOName)?.gameObject);
+		}
+	}
 
 	// This is not the same for every traveler song
 	// but its a few dozen millisecond difference at most
@@ -266,6 +289,9 @@ public class TravellersController(OWAudioSource audioSource)
 		audioSource.SetLocalVolume(0f);
 		audioSource.Play();
 		audioSource.FadeIn(1f);
+
+		foreach (var instrument in instrumentGameObjects)
+			instrument.SetActive(true);
 	}
 
 	public void StopTravelerMusic()
@@ -274,6 +300,9 @@ public class TravellersController(OWAudioSource audioSource)
 		// starting to play again, though probably unnecessary
 		// due to the syncing when starting the music
 		audioSource.FadeOut(1f);
+		
+		foreach (var instrument in instrumentGameObjects)
+			instrument?.SetActive(false);
 	}
 }
 
@@ -325,6 +354,7 @@ public class EmoteController : MonoBehaviour
 	public OWAudioSource audioSource { get; private set; }
 	public ParticleSystem particleSystem { get; private set; }
 	public TravellersController travellersController { get; private set; }
+	public string characterName;
 	
 	private int EmoteLayer;
 	
@@ -381,14 +411,20 @@ public class EmoteController : MonoBehaviour
 	
 	// -------------------------------------------------
 
+	private void Start()
+	{
+		// probably not the best way but eh
+		var travellersAudioSource = transform.Find("Music")?.GetComponent<OWAudioSource>();
+		travellersController = new TravellersController(this, travellersAudioSource);
+		
+		travellersController.Awake();
+	}
+	
 	private void Awake()
 	{
 		animator = GetComponent<Animator>();
 		audioSource = GetComponent<OWAudioSource>();
-
-		// probably not the best way but eh
-		var travellersAudioSource = transform.Find("Music")?.GetComponent<OWAudioSource>();
-		travellersController = new TravellersController(travellersAudioSource);
+		
 		particleSystem = GetComponentInChildren<ParticleSystem>();
 
 		_renderers = GetComponentsInChildren<Renderer>(true);

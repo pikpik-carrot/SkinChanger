@@ -66,7 +66,10 @@ namespace SkinChanger
 				ColliderCenter = collCenter;
 
 				if (hasEmotes)
-					GameObject.AddComponent<EmoteController>();
+				{
+					var controller = GameObject.AddComponent<EmoteController>();
+					controller.characterName = settingName;
+				}
 			}
 		}
 
@@ -301,7 +304,6 @@ namespace SkinChanger
 
 		void Update()
 		{
-			
 			var changeCamInShip = ModHelper.Config.GetSettingsValue<bool>(NormalCameraSizeInShip);
 			if (changeCamInShip)
 			{
@@ -385,11 +387,6 @@ namespace SkinChanger
 						PlayerCollider2.center = character.ColliderCenter;
 						PlayerCollider3.center = character.ColliderCenter;
 					}
-
-					// TODO:
-					// Add actual instruments / props to Nomai and Inhabitant (include Artifact in customization OR make it hold an artifact the correct way)
-					// Add the rest of the Hearthians (pain-maxxing)
-					// Another person changing skins causes others with the same skin to stop their emote
 					
 					// inhabitant customization
 					if (modelSetting == "Inhabitant")
